@@ -22,11 +22,12 @@
         <jdbc:script location="classpath:init-script-db.sql"/>
     </jdbc:initialize-database>
 
-    <mvc:view-controller path="/" view-name="usersCheckPage"/>
+    <mvc:resources mapping="/**" location="/"/>
+    <!--<mvc:view-controller path="/" view-name="usersCheckPage"/>
     <bean id="resolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
-        <property name="prefix" value="/pages/"/>
+        <property name="prefix" value="/WEB-INF/pages/"/>
         <property name="suffix" value=".jsp"/>
-    </bean>
+    </bean>-->
 
 
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">

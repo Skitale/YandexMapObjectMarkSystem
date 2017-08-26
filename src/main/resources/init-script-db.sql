@@ -1,4 +1,4 @@
-﻿INSERT INTO `yandexmapobj`.`objectmark` (`id`, `textMark`, `latitude`, `longitude`)
+INSERT INTO `yandexmapobj`.`objectmark` (`id`, `textMark`, `latitude`, `longitude`)
 VALUES ('1', 'Москва', '56.319220', '44.014960');
 INSERT INTO `yandexmapobj`.`objectmark` (`id`, `textMark`, `latitude`, `longitude`)
 VALUES ('2', 'Нижний Новгород', '56.319220', '44.014960');
