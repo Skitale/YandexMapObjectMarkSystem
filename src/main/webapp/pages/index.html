@@ -1,0 +1,72 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+	<script src="https://api-maps.yandex.ru/2.1/?lang=ru-RU" type="text/javascript"> </script>
+	<script type="text/javascript">
+		ymaps.ready(init);
+		var myMap, PlacemarkOne;
+
+		function init(){
+			PlacemarkOne = new ymaps.Placemark([55.76, 37.64], {
+				hintContent: 'Москва!', 
+				//balloonContent: 'Столица России',	
+				//iconContent: "Москва",
+				iconCaption: "Москва"			
+			}, {
+				preset: "islands#blueDotIconWithCaption",
+				draggable: true
+			});
+			
+			PlacemarkTwo = new ymaps.Placemark([56.319220, 44.014960], {
+				hintContent: 'Нижний Новгород! Don\'t drag!', 	
+				iconCaption: "Нижний Новгород"			
+			}, {
+				preset: "islands#blueDotIconWithCaption"
+			});
+				
+			myMap = new ymaps.Map("map", {
+				center: [55.76, 37.64],
+				zoom: 7,
+				controls: ['zoomControl'],
+				behaviors: ['drag', 'scrollZoom']
+			});
+			myMap.geoObjects.add(PlacemarkOne);
+			myMap.geoObjects.add(PlacemarkTwo);
+			
+			PlacemarkOne.events.add('dragend', function(e){
+				var coord = PlacemarkOne.geometry.getCoordinates();
+				var Geocoder = ymaps.geocode(coord);
+				Geocoder.then(
+					function (res) {
+						var object = res.geoObjects.get(0);
+						/*alert(object.properties.get('description'));
+						alert(object.properties.get('text'));
+						var objects = res.geoObjects.get(0).properties.getAll();
+						for(key in objects){
+							var value = objects[key];
+							alert('key: ' + key + 'value: ' + value);
+						}*/
+						PlacemarkOne.properties.set('iconCaption', object.properties.get('text').split(',')[1]);
+						PlacemarkOne.properties.set('hintContent', object.properties.get('text'));
+					},
+					function (err) {
+						alert('Ошибка');
+					}
+				);
+			});
+		}
+		
+	</script>
+</head>
+
+<body style="margin: 0; padding: 0;">
+
+	<div id="map" style="width: 100%; height: 100%; position: absolute;"></div>
+
+	<div id="but" style="position: absolute; top: 10px; left: 50%;">
+		<form>
+			<input type="submit" value="test"/>
+		</form>
+	</div>
+</body>
+</html>

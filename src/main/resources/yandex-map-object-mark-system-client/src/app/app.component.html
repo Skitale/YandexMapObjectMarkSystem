@@ -1,0 +1,58 @@
+<div id="content">
+  <div id="map"></div>
+</div>
+<div id="wrapper_header">
+  <div id="header">
+    <button (click)="getData()" class="btn btn-default"> </button>
+    <div id="logo"></div>
+    <div id="name">Yandex Map</div>
+     <form #mForm="ngForm" class="navbar-form navbar-left" role="search" novalidate (ngSubmit)="toSearchMarker(mForm)">
+       <div [class.has-error]="mForm.invalid && mForm.touched" class="form-group">
+          <input name="lat" type="text" ngModel
+          class="form-control" required pattern="^[+-]?[0-9]*[.,]?[0-9]+$" placeholder="latitude">
+          <input  name="lng" type="text" ngModel
+          class="form-control" required pattern="^[+-]?[0-9]*[.,]?[0-9]+$" placeholder="longitude">
+       </div>
+       <button name="but-search" type="submit" [disabled]="mForm.invalid" class="btn btn-default">Search</button>
+       <div class="btn-wrapper-search" [style.display]= "!submittedForm ? 'none' : 'inline'" >
+         <button  [style.display]="isSaveSearchMarker ? 'none' : 'inline-block' " (click)="saveSearchMark()" type="button" class="btn btn-default">
+           <span class="glyphicon glyphicon-heart-empty"></span>
+         </button>
+         <button  [style.display]="isSaveSearchMarker ? 'inline-block' : 'none' " (click)="deleteSearchMark()" type="button" class="btn btn-default">
+           <span class="glyphicon glyphicon-heart"></span>
+         </button>
+       </div>
+    </form>
+
+  </div>
+</div>
+<div id="infoMark" *ngIf="!!selectedMark.coordinates">
+  <div id="iMark">
+    <h1>Info Mark</h1>
+    <div class="btn-wrapper">
+      <button [style.display]="isSaveSelectedMarker ? 'none' : 'inline-block' " (click)="saveSelectedMark()" type="button" class="btn btn-default">
+        <span class="glyphicon glyphicon-heart-empty"></span>
+      </button>
+      <button [style.display]="isSaveSelectedMarker ? 'inline-block' : 'none' " (click)="deleteSelectedMark()" type="button" class="btn btn-default">
+        <span class="glyphicon glyphicon-heart"></span>
+      </button>
+    </div>
+  </div>
+  <div id="propertiesMark">
+    <strong>Name: </strong>{{selectedMark.iconContent}}<br>
+    <strong>Coords: </strong> ({{selectedMark.coordinates[0]}}, {{selectedMark.coordinates[1]}})
+    <textarea rows="6" class="form-control" disabled>{{selectedMark.balloonContentBody}}</textarea>
+  </div>
+</div>
+<div id="tableMarksHeader">
+  <h1>Table of Marks</h1>
+  <div id="tableMarks">
+    <ul class="Marks">
+      <li *ngFor="let m of markers"> {{m.iconContent}}
+        <button (click)="deleteMarkFromTable(m)" id="trashIcon" type="button" class="btn btn-link btn-xs">
+          <span  class="glyphicon glyphicon-trash"></span>
+        </button>
+      </li>
+    </ul>
+  </div>
+</div>
