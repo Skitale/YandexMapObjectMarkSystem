@@ -1,0 +1,46 @@
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+# compiled output
+src/main/resources/yandex-map-object-mark-system-client/dist
+src/main/resources/yandex-map-object-mark-system-client/tmp
+src/main/resources/yandex-map-object-mark-system-client/out-tsc
+
+# dependencies
+src/main/resources/yandex-map-object-mark-system-client/node_modules
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log
+testem.log
+/typings
+yarn-error.log
+
+# e2e
+src/main/resources/yandex-map-object-mark-system-client/e2e/*.js
+src/main/resources/yandex-map-object-mark-system-client/e2e/*.map
+
+# System Files
+.DS_Store
+Thumbs.db
+src/test/
+target/
+YandexMapObjectMarkSystem.iml
