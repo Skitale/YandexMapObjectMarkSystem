@@ -1,5 +1,7 @@
 package sys.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 /**
@@ -11,30 +13,43 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "objectmark")
 public class ObjectMark {
+    @JsonProperty("id")
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
     @Column
-    private String textMark;
+    private String iconContent;
 
-    @Column(nullable = false, precision = 10, scale = 6)
+    @Column
+    private String balloonContentBody;
+
+    @Column(nullable = false, precision = 20, scale = 16)
     private BigDecimal latitude;
 
-    @Column(nullable = false, precision = 10, scale = 6)
+    @Column(nullable = false, precision = 20, scale = 16)
     private BigDecimal longitude;
 
     @Column
-    private String pathIconMark;
+    private String preset;
 
     public ObjectMark() {
     }
 
-    public ObjectMark(String textMark, BigDecimal latitude, BigDecimal longitude, String pathIconMark) {
-        this.textMark = textMark;
+    public ObjectMark(String iconContent, String balloonContentBody, BigDecimal latitude, BigDecimal longitude, String preset) {
+        this.iconContent = iconContent;
+        this.balloonContentBody = balloonContentBody;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.pathIconMark = pathIconMark;
+        this.preset = preset;
+    }
+
+    public String getBalloonContentBody() {
+        return balloonContentBody;
+    }
+
+    public void setBalloonContentBody(String balloonContentBody) {
+        this.balloonContentBody = balloonContentBody;
     }
 
     public long getId() {
@@ -45,12 +60,12 @@ public class ObjectMark {
         this.id = id;
     }
 
-    public String getTextMark() {
-        return textMark;
+    public String getIconContent() {
+        return iconContent;
     }
 
-    public void setTextMark(String textMark) {
-        this.textMark = textMark;
+    public void setIconContent(String iconContent) {
+        this.iconContent = iconContent;
     }
 
     public BigDecimal getLatitude() {
@@ -69,22 +84,24 @@ public class ObjectMark {
         this.longitude = longitude;
     }
 
-    public String getPathIconMark() {
-        return pathIconMark;
+    public String getPreset() {
+        return preset;
     }
 
-    public void setPathIconMark(String pathIconMark) {
-        this.pathIconMark = pathIconMark;
+    public void setPreset(String pathIconMark) {
+        this.preset = pathIconMark;
     }
 
     @Override
     public String toString() {
         return "ObjectMark{" +
                 "id=" + id +
-                ", textMark='" + textMark + '\'' +
+                ", iconContent='" + iconContent + '\'' +
+                ", balloonContentBody='" + balloonContentBody + '\'' +
                 ", latitude=" + latitude +
                 ", longitude=" + longitude +
-                ", pathIconMark='" + pathIconMark + '\'' +
+                ", preset='" + preset + '\'' +
                 '}';
     }
+
 }

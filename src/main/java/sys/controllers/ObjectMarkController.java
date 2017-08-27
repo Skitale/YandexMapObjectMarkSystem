@@ -18,6 +18,7 @@ import java.util.List;
  * @version 1.0
  */
 @Controller
+@CrossOrigin(origins = {"http://localhost:4200"}, allowCredentials = "true", allowedHeaders = {"*"}, methods = {RequestMethod.POST, RequestMethod.GET, RequestMethod.OPTIONS, RequestMethod.HEAD, RequestMethod.PUT, RequestMethod.DELETE})
 @RequestMapping("/objectMarks")
 public class ObjectMarkController {
 
@@ -33,11 +34,24 @@ public class ObjectMarkController {
        return objectMarkService.getAllMarkObjects();
     }
 
-    @CrossOrigin(origins = {"http://localhost:4200"}, allowCredentials = "true", allowedHeaders = {"*"}, methods = {RequestMethod.POST})
-    @RequestMapping(value = "/addMark", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ObjectMark createMarkObject(@RequestBody ObjectMark objectMark){
+        return objectMarkService.createMarkObject(objectMark);
+    }
+
+    @RequestMapping(value = "/delete/{id}", method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.OK)
-    public void addMark(@RequestBody ObjectMark mark){
-        objectMarkService.addMarkObject(mark);
+    public void deleteMarkObject(@PathVariable Long id){
+        objectMarkService.deleteMarkObject(id);
+    }
+
+    @RequestMapping(value = "/update", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(value = HttpStatus.OK)
+    public void updateMarkObject(@RequestBody ObjectMark objectMark){
+        objectMarkService.updateMarkObject(objectMark);
     }
 
 

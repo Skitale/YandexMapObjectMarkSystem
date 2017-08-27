@@ -50,12 +50,12 @@
         <property name="entityManagerFactory" ref="entityManagerFactory"/>
     </bean>
 
-    <mvc:cors>
+    <!--<mvc:cors>
         <mvc:mapping path="/**"
                      allowed-methods="GET, PUT, OPTIONS, PUT, DELETE"
                      allowed-origins="*"
                      allowed-headers="*"
                      allow-credentials="true"
         />
-    </mvc:cors>
+    </mvc:cors>-->
 </beans>
