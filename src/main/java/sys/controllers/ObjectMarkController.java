@@ -1,8 +1,10 @@
 package sys.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -18,7 +20,7 @@ import java.util.List;
  * @version 1.0
  */
 @Controller
-@CrossOrigin(origins = {"http://localhost:4200"}, allowCredentials = "true", allowedHeaders = {"*"}, methods = {RequestMethod.POST, RequestMethod.GET, RequestMethod.OPTIONS, RequestMethod.HEAD, RequestMethod.PUT, RequestMethod.DELETE})
+@CrossOrigin(/*origins = {"http://localhost:4200", "http://192.168.1.65:8080"},*/ allowCredentials = "true", allowedHeaders = "*", methods = {RequestMethod.POST, RequestMethod.GET, RequestMethod.OPTIONS, RequestMethod.HEAD, RequestMethod.PUT, RequestMethod.DELETE})
 @RequestMapping("/objectMarks")
 public class ObjectMarkController {
 
@@ -52,6 +54,20 @@ public class ObjectMarkController {
     @ResponseStatus(value = HttpStatus.OK)
     public void updateMarkObject(@RequestBody ObjectMark objectMark){
         objectMarkService.updateMarkObject(objectMark);
+    }
+
+    @RequestMapping(value = "/getPdf", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<byte[]> getPfdFileOfAllMark(){
+        byte[] content = objectMarkService.createPdfFileOfAllMarks();
+        if(content == null) {
+            return new ResponseEntity<byte[]>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        HttpHeaders httpHeaders = new HttpHeaders();
+        String fileName = "pdfFile.pdf";
+        httpHeaders.setContentType(MediaType.APPLICATION_PDF);
+        httpHeaders.setContentDispositionFormData(fileName,fileName);
+        httpHeaders.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+        return new ResponseEntity<byte[]>(content, httpHeaders, HttpStatus.OK);
     }
 
 

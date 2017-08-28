@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>userSystem</groupId>
-    <artifactId>userSystem</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <groupId>YandexMapObjectMarkSystem</groupId>
+    <artifactId>YandexMapObjectMarkSystem</artifactId>
+    <version>1.0</version>
     <packaging>war</packaging>
 
     <properties>
@@ -103,6 +103,7 @@
                 <configuration>
                     <scanIntervalSeconds>2</scanIntervalSeconds>
                     <httpConnector>
+                        <host>192.168.1.65</host>
                         <port>8080</port>
                     </httpConnector>
                     <webApp>
