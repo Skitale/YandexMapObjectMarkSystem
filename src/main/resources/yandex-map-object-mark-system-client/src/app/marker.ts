@@ -1,9 +1,10 @@
 export class Marker {
-    id: number;
-    coordinates: number[];
+    id?: number;
+    latitude: number;
+    longitude: number;
     balloonContentBody: string;
     iconContent: string;
     preset: string;
-    draggable: boolean;
+    draggable?: boolean;
     refMarkApi?: any;
 };

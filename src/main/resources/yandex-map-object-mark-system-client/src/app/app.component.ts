@@ -1,4 +1,4 @@
-import { Component , OnInit, ChangeDetectorRef} from '@angular/core';
+import { Component , OnInit, ChangeDetectorRef, ViewChild} from '@angular/core';
 import { NgForm} from '@angular/forms';
 
 import { Marker } from './marker';
@@ -6,6 +6,9 @@ import { MarkService } from './mark.service';
 import { WindowRef } from './window-ref';
 
 declare var ymaps: any;
+declare var $: any;
+
+import * as FileSaver from 'file-saver';
 
 @Component({
   selector: 'app-root',
@@ -14,6 +17,9 @@ declare var ymaps: any;
 })
 export class AppComponent implements OnInit {
   title = 'title';
+
+   @ViewChild("modalForm")
+   modalForm: NgForm;
 
    markers : Marker[] = [];
    myMap : any;
@@ -63,11 +69,12 @@ export class AppComponent implements OnInit {
        that.registrationEventClickOnMap();
        that.registrationEventDragEnd();
 
-       that.markService.getMarks().then( (markers) => {
+       that.getMarksFromServer();
+       /*that.markService.getMarks().then( (markers) => {
          that.markers = markers;
          that.ref.detectChanges();
          that.drawMarkersOnMap();
-       });
+       });*/
     });
 
   }
@@ -83,21 +90,32 @@ export class AppComponent implements OnInit {
   }
 
   drawMarkerOnMap(marker : Marker){
-    var mark = new ymaps.Placemark(marker.coordinates, {
+    if(marker.balloonContentBody == null){
+      marker.balloonContentBody = '';
+    }
+    if(marker.iconContent == null){
+      marker.iconContent = '';
+    }
+    if(marker.preset == null){
+      marker.preset = '';
+    }
+    //console.log(marker);
+    var mark = new ymaps.Placemark([marker.latitude, marker.longitude], {
       balloonContentHeader: marker.iconContent,
       balloonContentBody: marker.balloonContentBody,
       iconContent: marker.iconContent,
       iconCaption: marker.iconContent,
     }, {
       preset: marker.preset,
-      draggable: marker.draggable
+      draggable: marker.draggable,
+      hasBalloon: true
     });
     marker.refMarkApi = mark;
     this.myMap.geoObjects.add(mark);
   }
 
   clearMarkerOnMap(marker : Marker){
-    console.log("ref: " + marker.refMarkApi + ", name: " + marker.iconContent);
+    //console.log("ref: " + marker.refMarkApi + ", name: " + marker.iconContent);
     this.myMap.geoObjects.remove(marker.refMarkApi);
   }
 
@@ -122,7 +140,8 @@ export class AppComponent implements OnInit {
   }
 
   updateSyncDataOfMarker(markerYApi: any, marker: Marker){
-    marker.coordinates = markerYApi.geometry.getCoordinates();
+    marker.latitude = markerYApi.geometry.getCoordinates()[0];
+    marker.longitude = markerYApi.geometry.getCoordinates()[1];
     marker.balloonContentBody = markerYApi.properties.get('balloonContentBody');
     marker.iconContent = markerYApi.properties.get('iconContent');
     this.ref.detectChanges();
@@ -147,94 +166,149 @@ export class AppComponent implements OnInit {
 		);
   }
 
-saveMarkToTable(marker : Marker){
-  let m: Marker = {
-     id: this.markers.length,
-     coordinates: marker.coordinates,
-     balloonContentBody: marker.balloonContentBody,
-     iconContent: marker.iconContent,
-     preset: marker.preset,
-     draggable: false,
-     refMarkApi: ''
-  }
-  marker.id = m.id;
-  this.drawMarkerOnMap(m);
-  this.markers.push(m);
-  this.saveMarkToServer(m);
-  //console.log(m);
-  this.ref.detectChanges();
-  //this.logArrForEach();
-}
+  saveMarkToTable(marker : Marker){
+    let m: Marker = {
+       latitude: marker.latitude,
+       longitude: marker.longitude,
+       balloonContentBody: marker.balloonContentBody,
+       iconContent: marker.iconContent,
+       preset: marker.preset,
+       draggable: false,
+       refMarkApi: ''
+    }
+    this.saveMarkToServer(m).then( res => {
+      console.warn('from server: ');
+      console.log(res);
+      marker.id = res.id;
+      this.markers.push(res);
+      this.ref.detectChanges();
+      this.drawMarkerOnMap(res);
+    });
 
-deleteMarkFromTable(marker: Marker){
-  let index = this.markers.findIndex( obj => obj.id == marker.id );
-  this.clearMarkerOnMap(this.markers[index]);
-  //console.log("this.isSaveSelectedMarker "+ this.isSaveSelectedMarker);
-  //console.log("this.isSaveSearchMarker "+ this.isSaveSearchMarker);
-  if(marker.id == this.selectedMark.id){
+    //console.log(m);
+    //this.logArrForEach();
+  }
+
+  deleteMarkFromTable(marker: Marker){
+    this.deleteMarkFromServer(marker.id);
+    let index = this.markers.findIndex( obj => obj.id == marker.id );
+    this.clearMarkerOnMap(this.markers[index]);
+    //console.log("this.isSaveSelectedMarker "+ this.isSaveSelectedMarker);
+    //console.log("this.isSaveSearchMarker "+ this.isSaveSearchMarker);
+    if(marker.id == this.selectedMark.id){
+      this.isSaveSelectedMarker = false;
+    }
+    if(marker.id == this.searchMark.id){
+      this.isSaveSearchMarker = false;
+    }
+    //console.log(marker);
+    //console.log("and it id: " + index);
+    //console.log("this.isSaveSelectedMarker "+ this.isSaveSelectedMarker);
+    //console.log("this.isSaveSearchMarker "+ this.isSaveSearchMarker);
+    this.markers.splice(index, 1);
+    this.ref.detectChanges();
+    //this.logArrForEach();
+  }
+
+  saveSelectedMark(){
+    this.isSaveSelectedMarker = true;
+    this.saveMarkToTable(this.selectedMark);
+  }
+
+  deleteSelectedMark(){
     this.isSaveSelectedMarker = false;
+    this.deleteMarkFromTable(this.selectedMark);
   }
-  if(marker.id == this.searchMark.id){
+
+  saveSearchMark(){
+    this.isSaveSearchMarker = true;
+    this.saveMarkToTable(this.searchMark);
+  }
+
+  deleteSearchMark(){
     this.isSaveSearchMarker = false;
+    this.deleteMarkFromTable(this.searchMark);
   }
-  //console.log(marker);
-  //console.log("and it id: " + index);
-  //console.log("this.isSaveSelectedMarker "+ this.isSaveSelectedMarker);
-  //console.log("this.isSaveSearchMarker "+ this.isSaveSearchMarker);
-  this.markers.splice(index, 1);
-  this.ref.detectChanges();
-  //this.logArrForEach();
-}
 
-saveSelectedMark(){
-  this.isSaveSelectedMarker = true;
-  this.saveMarkToTable(this.selectedMark);
-}
+  logArrForEach(){
+    this.markers.forEach((item, i, arr) =>{
+        console.log("item: " + item.iconContent + ", i: " + i + ", id: " + item.id);
+    });
+  }
 
-deleteSelectedMark(){
-  this.isSaveSelectedMarker = false;
-  this.deleteMarkFromTable(this.selectedMark);
-}
+  toSearchMarker(form: NgForm){
+    console.log(form);
+    this.submittedForm = true;
+    this.isSaveSearchMarker = false;
+    //console.log(!!this.searchMark.coordinates[0] && !!this.searchMark.coordinates[1]);
+    this.searchMark.preset = 'islands#orangeDotIconWithCaption';
+    this.searchMark.latitude = form.value.lat;
+    this.searchMark.longitude= form.value.lng;
+    //console.log(this.searchMark);
+    this.searchMarkYApi.options.set('visible', true);
+    this.searchMarkYApi.geometry.setCoordinates([this.searchMark.latitude, this.searchMark.longitude]);
+    this.myMap.setCenter([this.searchMark.latitude, this.searchMark.longitude]);
+    this.getGeoCodeAndSetProperties(this.searchMarkYApi, this.searchMark);
+  }
 
-saveSearchMark(){
-  this.isSaveSearchMarker = true;
-  this.saveMarkToTable(this.searchMark);
-}
+  changeFieldMark(form: NgForm){
+    //console.log(form.value);
+    let index = this.markers.findIndex( ind => ind.id == form.value.idMark);
+    this.markers[index].latitude = form.value.lat;
+    this.markers[index].longitude = form.value.lng;
+    this.markers[index].iconContent = form.value.bi;
+    this.markers[index].balloonContentBody = form.value.di;
+    this.markers[index].preset = form.value.pr;
+    this.clearMarkerOnMap(this.markers[index]);
+    this.drawMarkerOnMap(this.markers[index]);
+    let m: Marker = {
+       id: form.value.idMark,
+       latitude: form.value.lat,
+       longitude: form.value.lng,
+       balloonContentBody: form.value.di,
+       iconContent: form.value.bi,
+       preset: form.value.pr,
+    }
+    //console.log(m);
+    this.updateMarkFromServer(m);
+    $("#ModalFormChangeProp").modal('hide');
+  }
 
-deleteSearchMark(){
-  this.isSaveSearchMarker = false;
-  this.deleteMarkFromTable(this.searchMark);
-}
+  getMarksFromServer(){
+    this.markService.getMarksFromServer().then((res)=>{
+      //console.log(res);
+      this.markers = res;
+      this.ref.detectChanges();
+      this.drawMarkersOnMap();
+    });
+  }
 
-logArrForEach(){
-  this.markers.forEach((item, i, arr) =>{
-      console.log("item: " + item.iconContent + ", i: " + i + ", id: " + item.id);
-  });
-}
+  saveMarkToServer(marker : Marker) : Promise<Marker> {
+    return this.markService.saveMarkToServer(marker);
+  }
 
-toSearchMarker(form: NgForm){
-  this.submittedForm = true;
-  this.isSaveSearchMarker = false;
-  //console.log(!!this.searchMark.coordinates[0] && !!this.searchMark.coordinates[1]);
-  this.searchMark.preset = 'islands#orangeDotIconWithCaption';
-  this.searchMark.coordinates = [form.value.lat, form.value.lng];
-  //console.log(this.searchMark);
-  this.searchMarkYApi.options.set('visible', true);
-  this.searchMarkYApi.geometry.setCoordinates(this.searchMark.coordinates);
-  this.myMap.setCenter(this.searchMark.coordinates);
-  this.getGeoCodeAndSetProperties(this.searchMarkYApi, this.searchMark);
-}
+  deleteMarkFromServer(id : number){
+    this.markService.deleteMarkFromServer(id);
+  }
 
-getData(){
-  this.markService.getMarksFromServer().then((res)=>{
-    console.log(res);
-  });
-}
+  updateMarkFromServer(marker: Marker) : Promise<any>{
+    return this.markService.updateMarkFromServer(marker);
+  }
 
-saveMarkToServer(marker : Marker){
-  this.markService.saveMarkToServer(marker);
-}
+  getModalFormForMark(marker: Marker){
+    this.modalForm.controls['idMark'].setValue(marker.id);
+    this.modalForm.controls['bi'].setValue(marker.iconContent);
+    this.modalForm.controls['lat'].setValue(marker.latitude);
+    this.modalForm.controls['lng'].setValue(marker.longitude);
+    this.modalForm.controls['di'].setValue(marker.balloonContentBody);
+    this.modalForm.controls['pr'].setValue(marker.preset);
+    $("#ModalFormChangeProp").modal('show');
+  }
 
-
+  downloadPdfFile(){
+    this.markService.downloadListOfMarks().subscribe( blob => {
+      FileSaver.saveAs(blob, "listOfMarks.pdf");
+    });
+  }
 
 }

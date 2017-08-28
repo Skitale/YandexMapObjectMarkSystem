@@ -2,7 +2,8 @@ import { Marker } from './marker';
 
 export const MARKERS: Marker[] = [{
     id : 0,
-    coordinates: [55.75, 37.61],
+    latitude: 55.75,
+    longitude: 37.61,
     balloonContentBody: "Столица России",
     iconContent: "Москва",
     preset: "islands#redDotIcon",
@@ -11,7 +12,8 @@ export const MARKERS: Marker[] = [{
   },
   {
     id : 1,
-    coordinates: [55.847, 38.6],
+    latitude: 55.847,
+    longitude: 38.6,
     balloonContentBody: '',
     iconContent: "ЦУМ",
     preset: 	'islands#violetStretchyIcon',
@@ -20,7 +22,8 @@ export const MARKERS: Marker[] = [{
   },
   {
     id : 2,
-    coordinates: [55.847, 37.6],
+    latitude: 55.847,
+    longitude: 37.6,
     balloonContentBody: '',
     iconContent: "Volna",
     preset: 	'islands#violetStretchyIcon',
@@ -29,25 +32,28 @@ export const MARKERS: Marker[] = [{
   },
   {
     id : 3,
-    coordinates: [55.547, 37.2],
+    latitude: 55.547,
+    longitude: 37.2,
     balloonContentBody: '',
     iconContent: "Caviarclothes",
-    preset: 	'twirl#greyStretchyIcon',
+    preset: 	'islands#greyStretchyIcon',
     draggable: false,
     refMarkApi : ''
   },
   {
     id : 4,
-    coordinates: [55.247, 35.2],
+    latitude: 55.247,
+    longitude: 35.2,
     balloonContentBody: '',
     iconContent: "Rodina",
-    preset: 	'twirl#brownStretchyIcon',
+    preset: 	'islands#brownStretchyIcon',
     draggable: false,
     refMarkApi : ''
   },
   {
     id : 5,
-    coordinates: [55.347, 37.0],
+    latitude: 55.347,
+    longitude: 37.0,
     balloonContentBody: '',
     iconContent: "Brandshop",
     preset: 	'islands#oliveStretchyIcon',

@@ -1,19 +1,22 @@
 import { Injectable } from '@angular/core';
-import { Headers, Http } from '@angular/http';
+import { Headers, Http, RequestOptions, ResponseContentType} from '@angular/http';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Observable } from 'rxjs/Observable';
 
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/retry';
+import 'rxjs/Rx';
+
 import { MARKERS } from './mock-marks';
 import { Marker } from './marker';
 
-
+import * as FileSaver from 'file-saver';
 
 
 @Injectable()
 export class MarkService{
 
-  private webServiceEndPointUrl = 'http://localhost:8080/objectMarks';
+  private webServiceEndPointUrl = 'http://192.168.1.65:8080/objectMarks';
   private headers = new Headers({'Content-Type': 'application/json'});
 
   constructor(private http: Http) { }
@@ -29,26 +32,57 @@ export class MarkService{
              .catch(this.handleError);
   }
 
-  saveMarkToServer(marker : Marker) : void{
+  saveMarkToServer(marker : Marker) : Promise<Marker>{
     var bodyMarker = {
-      textMark: marker.iconContent,
-      latitude: marker.coordinates[0],
-      longitude: marker.coordinates[1],
-      pathIconMark: marker.preset
+      iconContent: marker.iconContent,
+      latitude: marker.latitude,
+      longitude: marker.longitude,
+      preset: marker.preset,
+      balloonContentBody: marker.balloonContentBody
     }
 
-    this.http.post(this.webServiceEndPointUrl + '/addMark', JSON.stringify(bodyMarker),
-    { headers: this.headers}).subscribe(data => { console.log(data) },
-      (err: HttpErrorResponse) => {
-      if (err.error instanceof Error) {
-        // A client-side or network error occurred. Handle it accordingly.
-        console.log('An error occurred:', err.error.message);
-      } else {
-        // The backend returned an unsuccessful response code.
-        // The response body may contain clues as to what went wrong,
-        console.log(`Backend returned code ${err.status}, body was: ${err.error}`);
-      }
+    return this.http.post(this.webServiceEndPointUrl + '/create', JSON.stringify(bodyMarker),
+    { headers: this.headers})
+    .toPromise()
+    .then( res => res.json() )
+    .catch(this.handleError);
+  }
+
+  deleteMarkFromServer(id : number){
+    const url = `${this.webServiceEndPointUrl + '/delete'}/${id}`;
+    this.http.post(url, { headers : this.headers})
+    .toPromise()
+    .then(() => null)
+    .catch(this.handleError);
+  }
+
+  updateMarkFromServer(marker : Marker): Promise<any>{
+    const url = `${this.webServiceEndPointUrl + '/update'}`;
+    var bodyMarker = {
+      id : marker.id,
+      iconContent: marker.iconContent,
+      latitude: marker.latitude,
+      longitude: marker.longitude,
+      preset: marker.preset,
+      balloonContentBody: marker.balloonContentBody
+    }
+    return this.http.post(url, JSON.stringify(bodyMarker), { headers : this.headers})
+    .toPromise()
+    .then(() => null)
+    .catch(this.handleError);
+  }
+
+  downloadListOfMarks() : Observable<Blob>{
+    const url = `${this.webServiceEndPointUrl + '/getPdf'}`;
+    let headers = new Headers({
+     'Content-Type': 'application/json',
+     'Accept': 'application/pdf'
     });
+    let options = new RequestOptions({headers: headers});
+    options.responseType = ResponseContentType.Blob;
+    return this.http.get(url, options)
+    .map(res => res.blob())
+    .catch(this.handleError);
   }
 
   private handleError(error: any): Promise<any> {

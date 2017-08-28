@@ -9,7 +9,7 @@
 #infoMark {
   position: absolute;
   top: 20%;
-  left: 80%;
+  left: 78%;
   background-color: #ffffff;
   padding: 20px 20px;
   border-radius: 7px;
@@ -43,14 +43,14 @@
   position: absolute;
   top: 20%;
   background-color: #ffffff;
-  width: 18em;
-  height: 20em;
+  width: 20em;
+  height: 22em;
   border-radius: 7px;
 }
 
 #tableMarks {
   overflow-y: auto;
-  max-height: 15em;
+  max-height: 17em;
 }
 
 #tableMarksHeader h1 {
@@ -62,7 +62,7 @@
   margin: 0 0 2em 0;
   list-style-type: none;
   padding: 0;
-  width: 16em;
+  width: 18.5em;
 }
 
 .Marks li {
@@ -71,8 +71,8 @@
   left: 0.2em;
   background-color: #EEE;
   margin: 0.3em;
-  padding: .3em .3em;
-  height: 2em;
+  padding: .3em 3em .3em .3em;
+  height: 3em;
   border-radius: 4px;
 }
 
@@ -87,9 +87,14 @@
   top: -10px;
 }
 
-#trashIcon{
+#trashIcon {
   position: absolute;
-  left: 15em;
+  left: 19em;
+}
+
+#changeIcon {
+  position: absolute;
+  left: 17em;
 }
 
 #iMark {

@@ -3,18 +3,25 @@
 </div>
 <div id="wrapper_header">
   <div id="header">
-    <button (click)="getData()" class="btn btn-default"> </button>
+    <!--<button (click)="updateMarkFromServer()" class="btn btn-default"> </button>-->
     <div id="logo"></div>
     <div id="name">Yandex Map</div>
+    <div>
      <form #mForm="ngForm" class="navbar-form navbar-left" role="search" novalidate (ngSubmit)="toSearchMarker(mForm)">
-       <div [class.has-error]="mForm.invalid && mForm.touched" class="form-group">
-          <input name="lat" type="text" ngModel
-          class="form-control" required pattern="^[+-]?[0-9]*[.,]?[0-9]+$" placeholder="latitude">
-          <input  name="lng" type="text" ngModel
-          class="form-control" required pattern="^[+-]?[0-9]*[.,]?[0-9]+$" placeholder="longitude">
+       <div [class.has-error]="mForm.invalid && mForm.touched" [class.has-success]="mForm.valid" class="form-group">
+          <input name="lat" id="latSearch" type="text" ngModel #lat="ngModel"
+          class="form-control" required pattern="^[+-]?[0-9]*[.,]?[0-9]{1,16}$" placeholder="latitude">
        </div>
-       <button name="but-search" type="submit" [disabled]="mForm.invalid" class="btn btn-default">Search</button>
-       <div class="btn-wrapper-search" [style.display]= "!submittedForm ? 'none' : 'inline'" >
+       <div [class.has-error]="mForm.invalid && mForm.touched" [class.has-success]="mForm.valid" class="form-group">
+          <input name="lng" id="lngSearch" type="text" ngModel #lng="ngModel"
+          class="form-control" required pattern="^[+-]?[0-9]*[.,]?[0-9]{1,16}$" placeholder="longitude">
+       </div>
+       <div class="form-group">
+         <button name="but-search" type="submit" [disabled]="mForm.invalid" class="btn btn-default">
+           <span class="glyphicon glyphicon-search"></span>Search
+         </button>
+       </div>
+       <div class="form-group btn-wrapper-search" [style.display]= "!submittedForm ? 'none' : 'inline'" >
          <button  [style.display]="isSaveSearchMarker ? 'none' : 'inline-block' " (click)="saveSearchMark()" type="button" class="btn btn-default">
            <span class="glyphicon glyphicon-heart-empty"></span>
          </button>
@@ -23,12 +30,17 @@
          </button>
        </div>
     </form>
-
-  </div>
+   </div>
+   <ul class="nav navbar-nav navbar-right" style="margin-top: .6em; margin-right: .5em;">
+     <li>
+       <button name="but-change-prop" type="submit" class="btn btn-default" (click)="downloadPdfFile()" ><span class="glyphicon glyphicon-download-alt"></span>Отчёт</button>
+     </li>
+   </ul>
+ </div>
 </div>
-<div id="infoMark" *ngIf="!!selectedMark.coordinates">
+<div id="infoMark" *ngIf="!!selectedMark.longitude">
   <div id="iMark">
-    <h1>Info Mark</h1>
+    <h1>Info of a mark</h1>
     <div class="btn-wrapper">
       <button [style.display]="isSaveSelectedMarker ? 'none' : 'inline-block' " (click)="saveSelectedMark()" type="button" class="btn btn-default">
         <span class="glyphicon glyphicon-heart-empty"></span>
@@ -40,19 +52,76 @@
   </div>
   <div id="propertiesMark">
     <strong>Name: </strong>{{selectedMark.iconContent}}<br>
-    <strong>Coords: </strong> ({{selectedMark.coordinates[0]}}, {{selectedMark.coordinates[1]}})
+    <strong>Coords: </strong> ({{selectedMark.latitude}}, {{selectedMark.longitude}})
     <textarea rows="6" class="form-control" disabled>{{selectedMark.balloonContentBody}}</textarea>
   </div>
 </div>
 <div id="tableMarksHeader">
-  <h1>Table of Marks</h1>
+  <h1>Table of marks</h1>
   <div id="tableMarks">
     <ul class="Marks">
       <li *ngFor="let m of markers"> {{m.iconContent}}
+        <button (click)="getModalFormForMark(m)" id="changeIcon" type="button" class="btn btn-link btn-xs">
+          <span class="glyphicon glyphicon-pencil"></span>
+        </button>
         <button (click)="deleteMarkFromTable(m)" id="trashIcon" type="button" class="btn btn-link btn-xs">
           <span  class="glyphicon glyphicon-trash"></span>
         </button>
       </li>
     </ul>
+  </div>
+</div>
+<div id="ModalFormChangeProp" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xs">
+  <div class="modal-content">
+    <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+      <span aria-hidden="true">×</span>
+    </button>
+    <h4 class="modal-title" id="myModalLabel">Changing mark properties</h4>
+    </div>
+    <div class="modal-body">
+    <form id="changePropMark" #modalForm="ngForm" class="form-horizontal" role="form" novalidate (ngSubmit)="changeFieldMark(modalForm)">
+      <div class="col-md-10" style="display: none;">
+        <input type="text" name="idMark" class="form-control" id="inputIdMark" ngModel #idMark="ngModel">
+      </div>
+      <div class="form-group" [class.has-error]="bi.invalid && bi.touched" [class.has-success]="bi.valid">
+        <label for="inputIconContent" class="col-md-2 control-label">Brief info</label>
+        <div class="col-md-10">
+          <input type="text" name="bi" class="form-control" id="inputIconContent" ngModel #bi="ngModel" required pattern="^[\w\d\sа-яА-Я0-9-,. ]{2,50}$" placeholder="Icon Content">
+        </div>
+      </div>
+      <div class="form-group" [class.has-error]="lat.invalid && lat.touched" [class.has-success]="lat.valid">
+        <label for="inputLatitude" class="col-md-2 control-label">Latitude</label>
+        <div class="col-md-10">
+          <input type="text" name="lat" class="form-control" id="inputLatitude" ngModel #lat="ngModel" required pattern="^[+-]?[0-9]*[.,]?[0-9]{1,16}$" placeholder="Latitude">
+        </div>
+      </div>
+      <div class="form-group" [class.has-error]="lng.invalid && lng.touched" [class.has-success]="lng.valid">
+        <label for="inputLongitude" class="col-md-2 control-label">Longitude</label>
+        <div class="col-md-10">
+          <input type="text" name="lng" class="form-control" id="inputLongitude" ngModel #lng="ngModel" required pattern="^[+-]?[0-9]*[.,]?[0-9]{1,16}$" placeholder="Longitude">
+        </div>
+      </div>
+      <div class="form-group" [class.has-error]="di.invalid && di.touched" [class.has-success]="di.valid">
+        <label for="inputBalloonContentBody" class="col-md-2 control-label">Detailed info</label>
+        <div class="col-md-10">
+          <input type="text" name="di" class="form-control" id="inputBalloonContentBody" ngModel #di="ngModel" pattern="^[\w\d\sа-яА-Я0-9-,. ]{2,200}$" placeholder="Detailed info">
+        </div>
+      </div>
+      <div class="form-group" [class.has-error]="pr.invalid && pr.touched" [class.has-success]="pr.valid">
+        <label for="inputPreset" class="col-md-2 control-label">Preset</label>
+        <div class="col-md-10">
+          <input type="text" name="pr" class="form-control" id="inputPreset" ngModel #pr="ngModel" required pattern="^islands#[\w]{2,100}$" placeholder="Preset">
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+          <button name="but-change-prop" type="submit" [disabled]="modalForm.invalid" class="btn btn-default">Change</button>
+        </div>
+      </div>
+    </form>
+    </div>
+  </div>
   </div>
 </div>
