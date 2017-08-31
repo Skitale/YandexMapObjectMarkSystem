@@ -87,7 +87,7 @@
   top: -10px;
 }
 
-#trashIcon {
+/*#trashIcon {
   position: absolute;
   left: 19em;
 }
@@ -96,7 +96,16 @@
   position: absolute;
   left: 17em;
 }
-
+*/
+#table-span{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#table-buttons {
+  position: absolute;
+  left: 14em;
+}
 #iMark {
   display: flex;
   flex-direction: row;
@@ -115,4 +124,16 @@
 .btn-wrapper-search {
   padding: 0.6em 0 0 0;
   display: inline;
+}
+
+#comboBoxS {
+
+}
+
+#linkLogout {
+  display: block;
+  text-decoration: none;
+  line-height: 2.3em;
+  height: 2.3em;
+  padding: 0 30px;
 }

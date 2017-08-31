@@ -25,6 +25,14 @@ export class MarkService{
     return Promise.resolve(MARKERS);
   }
 
+  getNameUser(): Promise<any> {
+    const url = `${'http://192.168.1.65:8080/getUserName'}`;
+    return this.http.get(url)
+            .toPromise()
+            .then(response => response)
+            .catch(this.handleError);
+  }
+
   getMarksFromServer(): Promise<any> {
     return this.http.get(this.webServiceEndPointUrl + '/list')
              .toPromise()
@@ -32,13 +40,13 @@ export class MarkService{
              .catch(this.handleError);
   }
 
-  saveMarkToServer(marker : Marker) : Promise<Marker>{
+  saveMarkToServer(marker : Marker) : Promise<any>{
     var bodyMarker = {
-      iconContent: marker.iconContent,
+      name: marker.iconContent,
       latitude: marker.latitude,
       longitude: marker.longitude,
-      preset: marker.preset,
-      balloonContentBody: marker.balloonContentBody
+      address: marker.balloonContentBody,
+      pathToIcon: marker.pathToIcon
     }
 
     return this.http.post(this.webServiceEndPointUrl + '/create', JSON.stringify(bodyMarker),
@@ -60,11 +68,9 @@ export class MarkService{
     const url = `${this.webServiceEndPointUrl + '/update'}`;
     var bodyMarker = {
       id : marker.id,
-      iconContent: marker.iconContent,
-      latitude: marker.latitude,
-      longitude: marker.longitude,
-      preset: marker.preset,
-      balloonContentBody: marker.balloonContentBody
+      name: marker.iconContent,
+      address: marker.balloonContentBody,
+      pathToIcon: marker.pathToIcon
     }
     return this.http.post(url, JSON.stringify(bodyMarker), { headers : this.headers})
     .toPromise()

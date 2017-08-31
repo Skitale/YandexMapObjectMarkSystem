@@ -16,7 +16,7 @@ import * as FileSaver from 'file-saver';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  title = 'title';
+   currentUserName: string;
 
    @ViewChild("modalForm")
    modalForm: NgForm;
@@ -40,40 +40,42 @@ export class AppComponent implements OnInit {
 
 
   ngOnInit(): void {
-    var that = this;
+    this.getUserNameSession();
 
-    ymaps.ready(function init() {
-       that.myMap = new ymaps.Map("map", {
+    ymaps.ready(() => {
+       this.myMap = new ymaps.Map("map", {
          center: [55.76, 37.64],
          zoom: 7,
          controls: []
        });
-       that.selectedMarkYApi = new ymaps.Placemark([], {
+       this.selectedMarkYApi = new ymaps.Placemark([], {
              }, {
-               preset: "islands#blueDotIconWithCaption",
+               preset: 'islands#darkOrangeDotIconWithCaption',
                draggable: true,
                visible: false
              }
         );
-        that.searchMarkYApi = new ymaps.Placemark([], {
+        this.searchMarkYApi = new ymaps.Placemark([], {
               }, {
-                preset: "islands#blueDotIconWithCaption",
+                preset: 'islands#darkOrangeDotIconWithCaption',
                 draggable: false,
                 visible: false
               }
          );
-       that.myMap.geoObjects.add(that.selectedMarkYApi);
-       that.myMap.geoObjects.add(that.searchMarkYApi);
+       this.myMap.geoObjects.add(this.selectedMarkYApi);
+       this.myMap.geoObjects.add(this.searchMarkYApi);
 
        //console.log("myMap: " + that.myMap);
-       that.registrationEventClickOnMap();
-       that.registrationEventDragEnd();
+       this.registrationEventClickOnMap();
+       this.registrationEventDragEnd();
 
-       that.getMarksFromServer();
-       /*that.markService.getMarks().then( (markers) => {
-         that.markers = markers;
-         that.ref.detectChanges();
-         that.drawMarkersOnMap();
+       this.getMarksFromServer();
+
+       // get markers from static file
+       /*this.markService.getMarks().then( (markers) => {
+         this.markers = markers;
+         this.ref.detectChanges();
+         this.drawMarkersOnMap();
        });*/
     });
 
@@ -107,8 +109,7 @@ export class AppComponent implements OnInit {
       iconCaption: marker.iconContent,
     }, {
       preset: marker.preset,
-      draggable: marker.draggable,
-      hasBalloon: true
+      draggable: false
     });
     marker.refMarkApi = mark;
     this.myMap.geoObjects.add(mark);
@@ -117,11 +118,12 @@ export class AppComponent implements OnInit {
   clearMarkerOnMap(marker : Marker){
     //console.log("ref: " + marker.refMarkApi + ", name: " + marker.iconContent);
     this.myMap.geoObjects.remove(marker.refMarkApi);
+    marker.refMarkApi = null;
   }
 
   registrationEventClickOnMap(){
+    this.selectedMark.preset = 'islands#darkBlueDotIconWithCaption';
     this.myMap.events.add('click', (e) =>{
-      this.selectedMark.preset = 'islands#orangeDotIconWithCaption';
       this.isSaveSelectedMarker = false;
       this.selectedMarkYApi.options.set('visible', true);
       this.selectedMarkYApi.geometry.setCoordinates(e.get('coords'));
@@ -166,8 +168,28 @@ export class AppComponent implements OnInit {
 		);
   }
 
+  getGeoCodeAndSetPropertiesForLoadFromServer(markerApi : any, marker: Marker){
+    let coord = markerApi.geometry.getCoordinates();
+    let Geocoder = ymaps.geocode(coord);
+    Geocoder.then( (res) => {
+        let object = res.geoObjects.get(0);
+        let text = object.properties.get('text').split(',').pop();
+        markerApi.properties.set('balloonContentHeader', marker.iconContent);
+        markerApi.properties.set('balloonContentBody', object.properties.get('text'));
+        markerApi.properties.set('iconContent', marker.iconContent);
+        markerApi.properties.set('iconCaption', marker.iconContent);
+        marker.balloonContentBody = markerApi.properties.get('balloonContentBody');
+        this.ref.detectChanges();
+        this.updateMarkFromServer(marker);
+      },
+      (err) => {
+        alert('Ошибка получения гео кода');
+      }
+    );
+  }
+
   saveMarkToTable(marker : Marker){
-    let m: Marker = {
+    let mark: Marker = {
        latitude: marker.latitude,
        longitude: marker.longitude,
        balloonContentBody: marker.balloonContentBody,
@@ -176,13 +198,15 @@ export class AppComponent implements OnInit {
        draggable: false,
        refMarkApi: ''
     }
-    this.saveMarkToServer(m).then( res => {
+    this.saveMarkToServer(mark).then( res => {
       console.warn('from server: ');
       console.log(res);
       marker.id = res.id;
-      this.markers.push(res);
+      mark.id = res.id
+      console.log(mark);
+      this.markers.push(mark);
       this.ref.detectChanges();
-      this.drawMarkerOnMap(res);
+      this.drawMarkerOnMap(mark);
     });
 
     //console.log(m);
@@ -213,21 +237,25 @@ export class AppComponent implements OnInit {
   saveSelectedMark(){
     this.isSaveSelectedMarker = true;
     this.saveMarkToTable(this.selectedMark);
+    this.selectedMarkYApi.options.set('visible', false);
   }
 
   deleteSelectedMark(){
     this.isSaveSelectedMarker = false;
     this.deleteMarkFromTable(this.selectedMark);
+    this.selectedMarkYApi.options.set('visible', true);
   }
 
   saveSearchMark(){
     this.isSaveSearchMarker = true;
     this.saveMarkToTable(this.searchMark);
+    this.searchMarkYApi.options.set('visible', false);
   }
 
   deleteSearchMark(){
     this.isSaveSearchMarker = false;
     this.deleteMarkFromTable(this.searchMark);
+    this.searchMarkYApi.options.set('visible', true);
   }
 
   logArrForEach(){
@@ -241,7 +269,7 @@ export class AppComponent implements OnInit {
     this.submittedForm = true;
     this.isSaveSearchMarker = false;
     //console.log(!!this.searchMark.coordinates[0] && !!this.searchMark.coordinates[1]);
-    this.searchMark.preset = 'islands#orangeDotIconWithCaption';
+    this.searchMark.preset = 'islands#darkBlueDotIconWithCaption';
     this.searchMark.latitude = form.value.lat;
     this.searchMark.longitude= form.value.lng;
     //console.log(this.searchMark);
@@ -250,25 +278,47 @@ export class AppComponent implements OnInit {
     this.myMap.setCenter([this.searchMark.latitude, this.searchMark.longitude]);
     this.getGeoCodeAndSetProperties(this.searchMarkYApi, this.searchMark);
   }
+  selectPathForComboBoxOption(path : string, option: string): string{
+    if(option === 'Standard icon'){
+      return '';
+    }
+    option = option.replace(' ','_').toLowerCase();
+    path = './images/' + option + '.png';
+    return path;
+  }
+
+  drawCustomIconForMark(marker: Marker){
+    marker.refMarkApi.options.unset('iconLayout');
+    if(marker.pathToIcon != '' && marker.pathToIcon != null){
+      marker.refMarkApi.options.set('iconLayout', 'default#image');
+      marker.refMarkApi.options.set('iconImageHref', marker.pathToIcon);
+      marker.refMarkApi.options.set('iconImageSize', [50, 50]);
+    }
+  }
 
   changeFieldMark(form: NgForm){
     //console.log(form.value);
+    let pathToImg;
+    pathToImg = this.selectPathForComboBoxOption(pathToImg, form.value.comboBoxPreset);
     let index = this.markers.findIndex( ind => ind.id == form.value.idMark);
-    this.markers[index].latitude = form.value.lat;
-    this.markers[index].longitude = form.value.lng;
     this.markers[index].iconContent = form.value.bi;
-    this.markers[index].balloonContentBody = form.value.di;
-    this.markers[index].preset = form.value.pr;
-    this.clearMarkerOnMap(this.markers[index]);
-    this.drawMarkerOnMap(this.markers[index]);
+    this.markers[index].pathToIcon = pathToImg;
+    //console.log(pathToImg);
     let m: Marker = {
        id: form.value.idMark,
-       latitude: form.value.lat,
-       longitude: form.value.lng,
-       balloonContentBody: form.value.di,
-       iconContent: form.value.bi,
-       preset: form.value.pr,
+       latitude: this.markers[index].latitude,
+       longitude: this.markers[index].longitude,
+       balloonContentBody: this.markers[index].balloonContentBody,
+       iconContent: this.markers[index].iconContent = form.value.bi,
+       pathToIcon: this.markers[index].pathToIcon,
     }
+    this.drawCustomIconForMark(this.markers[index]);
+    this.markers[index].refMarkApi.properties.set('balloonContentHeader', this.markers[index].iconContent);
+    this.markers[index].refMarkApi.properties.set('iconContent', this.markers[index].iconContent);
+    this.markers[index].refMarkApi.properties.set('iconCaption', this.markers[index].iconContent);
+    this.markers[index].refMarkApi.options.set('preset', this.markers[index].preset);
+    //this.clearMarkerOnMap(this.markers[index]);
+    //this.drawMarkerOnMap(this.markers[index]);
     //console.log(m);
     this.updateMarkFromServer(m);
     $("#ModalFormChangeProp").modal('hide');
@@ -277,13 +327,30 @@ export class AppComponent implements OnInit {
   getMarksFromServer(){
     this.markService.getMarksFromServer().then((res)=>{
       //console.log(res);
-      this.markers = res;
-      this.ref.detectChanges();
+      res.forEach( (mark) => {
+        let m : Marker = {
+          id: mark.id,
+          latitude: mark.latitude,
+          longitude: mark.longitude,
+          iconContent: mark.name,
+          balloonContentBody: '',
+          preset: 'islands#darkBlueDotIconWithCaption',
+          pathToIcon: mark.pathToIcon
+        }
+        this.markers.push(m);
+      });
       this.drawMarkersOnMap();
+      //console.log(this.markers);
+      this.markers.forEach( (mark) => {
+        //console.log(mark);
+        this.drawCustomIconForMark(mark);
+    		this.getGeoCodeAndSetPropertiesForLoadFromServer(mark.refMarkApi, mark);
+        //this.updateMarkFromServer(mark);
+      });
     });
   }
 
-  saveMarkToServer(marker : Marker) : Promise<Marker> {
+  saveMarkToServer(marker : Marker) : Promise<any> {
     return this.markService.saveMarkToServer(marker);
   }
 
@@ -296,18 +363,32 @@ export class AppComponent implements OnInit {
   }
 
   getModalFormForMark(marker: Marker){
+    //console.log(this.modalForm);
     this.modalForm.controls['idMark'].setValue(marker.id);
-    this.modalForm.controls['bi'].setValue(marker.iconContent);
-    this.modalForm.controls['lat'].setValue(marker.latitude);
-    this.modalForm.controls['lng'].setValue(marker.longitude);
-    this.modalForm.controls['di'].setValue(marker.balloonContentBody);
-    this.modalForm.controls['pr'].setValue(marker.preset);
+    this.modalForm.controls['nameMark'].setValue(marker.iconContent);
+    this.modalForm.controls['latMark'].setValue(marker.latitude);
+    this.modalForm.controls['lngMark'].setValue(marker.longitude);
+    this.modalForm.controls['addressMark'].setValue(marker.balloonContentBody);
+    if(marker.pathToIcon != null && marker.pathToIcon != ''){
+      let option : String = marker.pathToIcon.slice(9);
+      option = option.slice(0, option.indexOf('.png')).replace('_',' ');
+      option = option.slice(0, 1).toUpperCase() + option.slice(1);
+      this.modalForm.controls['iconOption'].setValue(option);
+    } else {
+      this.modalForm.controls['iconOption'].setValue('Standard icon');
+    }
     $("#ModalFormChangeProp").modal('show');
   }
 
   downloadPdfFile(){
     this.markService.downloadListOfMarks().subscribe( blob => {
-      FileSaver.saveAs(blob, "listOfMarks.pdf");
+      FileSaver.saveAs(blob, "Marks.pdf");
+    });
+  }
+
+  getUserNameSession(){
+    this.markService.getNameUser().then( (res) => {
+      this.currentUserName = res._body;
     });
   }
 
