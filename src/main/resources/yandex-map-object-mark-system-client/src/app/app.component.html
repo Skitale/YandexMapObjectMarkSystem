@@ -35,7 +35,7 @@
    </div>
    <ul class="nav navbar-nav navbar-right" style="margin-top: .6em; margin-right: .5em;">
      <li>
-       <button name="but-change-prop" type="submit" class="btn btn-default" (click)="downloadPdfFile()" ><span class="glyphicon glyphicon-download-alt"></span>Отчёт</button>
+       <button name="but-change-prop" type="submit" class="btn btn-default" (click)="downloadPdfFile()" ><span class="glyphicon glyphicon-download-alt"></span>Report</button>
      </li>
      <li>
        <a id="linkLogout" href="./logout">Logout</a>
@@ -67,7 +67,7 @@
   </div>
 </div>
 
-<div id="tableMarksHeader">
+<div id="tableMarksHeader" *ngIf="markers.length!=0">
   <h1>Table of marks</h1>
   <div id="tableMarks">
     <ul class="Marks">
@@ -85,95 +85,6 @@
   </div>
 </div>
 
-<div id="ModalFormChangeProp" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xs">
-  <div class="modal-content">
-    <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
-      <span aria-hidden="true">×</span>
-    </button>
-    <h4 class="modal-title" id="myModalLabel">Changing mark properties</h4>
-    </div>
-    <div class="modal-body">
-    <form id="changePropMark" #modalForm="ngForm" class="form-horizontal" role="form" novalidate (ngSubmit)="changeFieldMark(modalForm)">
-      <div class="col-md-10" style="display: none;">
-        <input type="text" name="idMark" class="form-control" id="idMark" ngModel #idMark="ngModel">
-      </div>
-      <div class="form-group" [class.has-error]="bi.invalid && bi.touched" [class.has-success]="bi.valid">
-        <label for="nameMark" class="col-md-2 control-label">Name mark</label>
-        <div class="col-md-10">
-          <input type="text" name="nameMark" class="form-control" id="nameMark" ngModel #nameMark="ngModel" required pattern="^[\w\d\sа-яА-Я0-9-,.ёЁ ]{2,50}$" placeholder="Name">
-        </div>
-      </div>
-      <div class="form-group" [class.has-error]="lat.invalid && lat.touched" [class.has-success]="lat.valid">
-        <label for="latMark" class="col-md-2 control-label">Latitude</label>
-        <div class="col-md-10">
-          <input type="text" name="latMark" class="form-control" id="latMark" ngModel #latMark="ngModel" required pattern="^[+-]?((([\d]|[1-2][\d]|[3-4][\d]|[5-6][\d]|7[\d]|8[0-4])[.]{1}[\d]{1,16})|([\d]|[1-2][\d]|[3-4][\d]|[5-6][\d]|7[\d]|8[0-5]))$" placeholder="Latitude" disabled>
-        </div>
-      </div>
-      <div class="form-group" [class.has-error]="lng.invalid && lng.touched" [class.has-success]="lng.valid">
-        <label for="lngMark" class="col-md-2 control-label">Longitude</label>
-        <div class="col-md-10">
-          <input type="text" name="lngMark" class="form-control" id="lngMark" ngModel #lngMark="ngModel" required pattern="^[+-]?((([0-9]|[1-2][\d]|[3-4][\d]|[5-6][\d]|[7-8][\d]|9[\d]|10[\d]|1[0-2][\d]|1[2-3][\d]|1[4-5][\d]|1[5-6][\d]|17[\d])[.]{1}[\d]{1,16})|([\d]|[1-2][\d]|[3-4][\d]|[5-6][\d]|[7-8][\d]|9[\d]|1[0-1][\d]|1[2-3][\d]|1[4-5][\d]|1[5-6][\d]|17[\d]|180))$" placeholder="Longitude" disabled>
-        </div>
-      </div>
-      <div class="form-group" [class.has-error]="di.invalid && di.touched" [class.has-success]="di.valid">
-        <label for="addressMark" class="col-md-2 control-label">Address</label>
-        <div class="col-md-10">
-          <input type="text" name="addressMark" class="form-control" id="addressMark" ngModel #addressMark="ngModel" pattern="^[\w\d\sа-яА-Я0-9-,. ]{2,200}$" placeholder="Address" disabled>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="iconOption" class="col-md-2 control-label">Type of an icon</label>
-        <div class="col-md-10">
-          <select name="iconOption" id="iconOption" form="changePropMark" ngModel class="form-control">
-            <option>Standard icon</option>
-            <option>Male</option>
-            <option>Male 2</option>
-            <option>Female</option>
-            <option>Female 2</option>
-            <option>Work</option>
-            <option>House</option>
-            <option>Worker</option>
-            <option>Businessman</option>
-            <option>Sity</option>
-            <option>Apartment</option>
-            <option>Factory</option>
-            <option>Department</option>
-            <option>Clinic</option>
-            <option>Courthouse</option>
-            <option>Embassy</option>
-            <option>Hotel five stars</option>
-            <option>Hotel four stars</option>
-            <option>Hotel three stars</option>
-            <option>Museum</option>
-            <option>Warehouse</option>
-            <option>Kremlin</option>
-            <option>Shopping</option>
-            <option>Treehouse</option>
-            <option>Cave</option>
-            <option>Forest</option>
-            <option>Camping tent</option>
-            <option>Campfire</option>
-            <option>Beach</option>
-            <option>Beach ball</option>
-            <option>Log cabin</option>
-            <option>Star</option>
-            <option>Heart</option>
-            <option>University</option>
-            <option>Student male</option>
-            <option>Student female</option>
-            <option>Maintenance</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="col-md-offset-2 col-md-10">
-          <button name="but-change-prop" type="submit" [disabled]="modalForm.invalid" class="btn btn-default">Change</button>
-        </div>
-      </div>
-    </form>
-    </div>
-  </div>
-  </div>
-</div>
+<app-modal-form [(marker)]="selectedMarkForModalForm"
+[markers]="markers" (readyForm)="onClickButtonModalForm($event)">
+</app-modal-form>

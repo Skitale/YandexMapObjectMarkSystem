@@ -1,5 +1,5 @@
 import { Component , OnInit, ChangeDetectorRef, ViewChild} from '@angular/core';
-import { NgForm} from '@angular/forms';
+import { NgForm } from '@angular/forms';
 
 import { Marker } from './marker';
 import { MarkService } from './mark.service';
@@ -18,15 +18,13 @@ import * as FileSaver from 'file-saver';
 export class AppComponent implements OnInit {
    currentUserName: string;
 
-   @ViewChild("modalForm")
-   modalForm: NgForm;
-
    markers : Marker[] = [];
    myMap : any;
    selectedMarkYApi : any;
    searchMarkYApi : any;
    selectedMark : Marker = new Marker();
    searchMark: Marker = new Marker();
+   selectedMarkForModalForm: Marker;
 
    submittedForm: boolean = false;
    isSaveSelectedMarker: boolean = false;
@@ -34,8 +32,7 @@ export class AppComponent implements OnInit {
 
    constructor(private markService: MarkService, private win: WindowRef, private ref: ChangeDetectorRef){
      //ref.detach();
-     console.log('Window object', win.nativeWindow);
-    // this.ymaps = this.win.nativeWindow.ymaps;
+     //console.log('Window object', win.nativeWindow);
    }
 
 
@@ -62,6 +59,8 @@ export class AppComponent implements OnInit {
                 visible: false
               }
          );
+       this.selectedMark.refMarkApi = this.selectedMarkYApi;
+       this.searchMark.refMarkApi = this.searchMarkYApi;
        this.myMap.geoObjects.add(this.selectedMarkYApi);
        this.myMap.geoObjects.add(this.searchMarkYApi);
 
@@ -199,14 +198,15 @@ export class AppComponent implements OnInit {
        refMarkApi: ''
     }
     this.saveMarkToServer(mark).then( res => {
-      console.warn('from server: ');
-      console.log(res);
+      //console.warn('from server: ');
+      //console.log(res);
       marker.id = res.id;
       mark.id = res.id
-      console.log(mark);
+      //console.log(mark);
       this.markers.push(mark);
       this.ref.detectChanges();
       this.drawMarkerOnMap(mark);
+      marker.refMarkApi.options.set('visible', false);
     });
 
     //console.log(m);
@@ -216,15 +216,18 @@ export class AppComponent implements OnInit {
   deleteMarkFromTable(marker: Marker){
     this.deleteMarkFromServer(marker.id);
     let index = this.markers.findIndex( obj => obj.id == marker.id );
-    this.clearMarkerOnMap(this.markers[index]);
+
     //console.log("this.isSaveSelectedMarker "+ this.isSaveSelectedMarker);
     //console.log("this.isSaveSearchMarker "+ this.isSaveSearchMarker);
-    if(marker.id == this.selectedMark.id){
+    if(marker.id === this.selectedMark.id){
       this.isSaveSelectedMarker = false;
+      this.selectedMark.refMarkApi.options.set('visible', true);
     }
-    if(marker.id == this.searchMark.id){
+    if(marker.id === this.searchMark.id){
       this.isSaveSearchMarker = false;
+      this.searchMark.refMarkApi.options.set('visible', true);
     }
+    this.clearMarkerOnMap(this.markers[index]);
     //console.log(marker);
     //console.log("and it id: " + index);
     //console.log("this.isSaveSelectedMarker "+ this.isSaveSelectedMarker);
@@ -237,25 +240,21 @@ export class AppComponent implements OnInit {
   saveSelectedMark(){
     this.isSaveSelectedMarker = true;
     this.saveMarkToTable(this.selectedMark);
-    this.selectedMarkYApi.options.set('visible', false);
   }
 
   deleteSelectedMark(){
     this.isSaveSelectedMarker = false;
     this.deleteMarkFromTable(this.selectedMark);
-    this.selectedMarkYApi.options.set('visible', true);
   }
 
   saveSearchMark(){
     this.isSaveSearchMarker = true;
     this.saveMarkToTable(this.searchMark);
-    this.searchMarkYApi.options.set('visible', false);
   }
 
   deleteSearchMark(){
     this.isSaveSearchMarker = false;
     this.deleteMarkFromTable(this.searchMark);
-    this.searchMarkYApi.options.set('visible', true);
   }
 
   logArrForEach(){
@@ -265,7 +264,7 @@ export class AppComponent implements OnInit {
   }
 
   toSearchMarker(form: NgForm){
-    console.log(form);
+    //console.log(form);
     this.submittedForm = true;
     this.isSaveSearchMarker = false;
     //console.log(!!this.searchMark.coordinates[0] && !!this.searchMark.coordinates[1]);
@@ -278,14 +277,6 @@ export class AppComponent implements OnInit {
     this.myMap.setCenter([this.searchMark.latitude, this.searchMark.longitude]);
     this.getGeoCodeAndSetProperties(this.searchMarkYApi, this.searchMark);
   }
-  selectPathForComboBoxOption(path : string, option: string): string{
-    if(option === 'Standard icon'){
-      return '';
-    }
-    option = option.replace(' ','_').toLowerCase();
-    path = './images/' + option + '.png';
-    return path;
-  }
 
   drawCustomIconForMark(marker: Marker){
     marker.refMarkApi.options.unset('iconLayout');
@@ -296,32 +287,8 @@ export class AppComponent implements OnInit {
     }
   }
 
-  changeFieldMark(form: NgForm){
-    //console.log(form.value);
-    let pathToImg;
-    pathToImg = this.selectPathForComboBoxOption(pathToImg, form.value.comboBoxPreset);
-    let index = this.markers.findIndex( ind => ind.id == form.value.idMark);
-    this.markers[index].iconContent = form.value.bi;
-    this.markers[index].pathToIcon = pathToImg;
-    //console.log(pathToImg);
-    let m: Marker = {
-       id: form.value.idMark,
-       latitude: this.markers[index].latitude,
-       longitude: this.markers[index].longitude,
-       balloonContentBody: this.markers[index].balloonContentBody,
-       iconContent: this.markers[index].iconContent = form.value.bi,
-       pathToIcon: this.markers[index].pathToIcon,
-    }
-    this.drawCustomIconForMark(this.markers[index]);
-    this.markers[index].refMarkApi.properties.set('balloonContentHeader', this.markers[index].iconContent);
-    this.markers[index].refMarkApi.properties.set('iconContent', this.markers[index].iconContent);
-    this.markers[index].refMarkApi.properties.set('iconCaption', this.markers[index].iconContent);
-    this.markers[index].refMarkApi.options.set('preset', this.markers[index].preset);
-    //this.clearMarkerOnMap(this.markers[index]);
-    //this.drawMarkerOnMap(this.markers[index]);
-    //console.log(m);
-    this.updateMarkFromServer(m);
-    $("#ModalFormChangeProp").modal('hide');
+  onClickButtonModalForm(marker: Marker){
+    this.updateMarkFromServer(marker);
   }
 
   getMarksFromServer(){
@@ -364,20 +331,8 @@ export class AppComponent implements OnInit {
 
   getModalFormForMark(marker: Marker){
     //console.log(this.modalForm);
-    this.modalForm.controls['idMark'].setValue(marker.id);
-    this.modalForm.controls['nameMark'].setValue(marker.iconContent);
-    this.modalForm.controls['latMark'].setValue(marker.latitude);
-    this.modalForm.controls['lngMark'].setValue(marker.longitude);
-    this.modalForm.controls['addressMark'].setValue(marker.balloonContentBody);
-    if(marker.pathToIcon != null && marker.pathToIcon != ''){
-      let option : String = marker.pathToIcon.slice(9);
-      option = option.slice(0, option.indexOf('.png')).replace('_',' ');
-      option = option.slice(0, 1).toUpperCase() + option.slice(1);
-      this.modalForm.controls['iconOption'].setValue(option);
-    } else {
-      this.modalForm.controls['iconOption'].setValue('Standard icon');
-    }
-    $("#ModalFormChangeProp").modal('show');
+    this.selectedMarkForModalForm = marker;
+    this.ref.detectChanges();
   }
 
   downloadPdfFile(){

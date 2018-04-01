@@ -3,6 +3,7 @@ package sys.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
+import javax.persistence.Id;
 import java.math.BigDecimal;
 /**
  * Simple Java Bean domain object that represents a mark of object on a map.
@@ -19,10 +20,10 @@ public class ObjectMark {
     private long id;
 
     @Column
-    private String iconContent;
+    private String name;
 
     @Column
-    private String balloonContentBody;
+    private String address;
 
     @Column(nullable = false, precision = 20, scale = 16)
     private BigDecimal latitude;
@@ -31,25 +32,31 @@ public class ObjectMark {
     private BigDecimal longitude;
 
     @Column
-    private String preset;
+    @org.springframework.data.annotation.Transient
+    private String pathToIcon;
+
+    @org.springframework.data.annotation.Transient
+    @Column
+    private Long userId;
 
     public ObjectMark() {
     }
 
-    public ObjectMark(String iconContent, String balloonContentBody, BigDecimal latitude, BigDecimal longitude, String preset) {
-        this.iconContent = iconContent;
-        this.balloonContentBody = balloonContentBody;
+    public ObjectMark(String name, String balloonContentBody, BigDecimal latitude, BigDecimal longitude, String preset, Long userId) {
+        this.name = name;
+        this.address = balloonContentBody;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.preset = preset;
+        this.pathToIcon = preset;
+        this.userId = userId;
     }
 
-    public String getBalloonContentBody() {
-        return balloonContentBody;
+    public String getAddress() {
+        return address;
     }
 
-    public void setBalloonContentBody(String balloonContentBody) {
-        this.balloonContentBody = balloonContentBody;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public long getId() {
@@ -60,12 +67,12 @@ public class ObjectMark {
         this.id = id;
     }
 
-    public String getIconContent() {
-        return iconContent;
+    public String getName() {
+        return name;
     }
 
-    public void setIconContent(String iconContent) {
-        this.iconContent = iconContent;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public BigDecimal getLatitude() {
@@ -84,24 +91,32 @@ public class ObjectMark {
         this.longitude = longitude;
     }
 
-    public String getPreset() {
-        return preset;
+    public String getPathToIcon() {
+        return pathToIcon;
     }
 
-    public void setPreset(String pathIconMark) {
-        this.preset = pathIconMark;
+    public void setPathToIcon(String pathIconMark) {
+        this.pathToIcon = pathIconMark;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     @Override
     public String toString() {
-        return "ObjectMark{" +
+        return "ObjectMarkService{" +
                 "id=" + id +
-                ", iconContent='" + iconContent + '\'' +
-                ", balloonContentBody='" + balloonContentBody + '\'' +
+                ", name='" + name + '\'' +
+                ", address='" + address + '\'' +
                 ", latitude=" + latitude +
                 ", longitude=" + longitude +
-                ", preset='" + preset + '\'' +
+                ", pathToIcon='" + pathToIcon + '\'' +
+                ", userId='" + userId + '\'' +
                 '}';
     }
-
 }

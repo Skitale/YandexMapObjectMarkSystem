@@ -16,7 +16,7 @@ import * as FileSaver from 'file-saver';
 @Injectable()
 export class MarkService{
 
-  private webServiceEndPointUrl = 'http://192.168.1.65:8080/objectMarks';
+  private webServiceEndPointUrl = 'http://localhost:8080/objectMarks';
   private headers = new Headers({'Content-Type': 'application/json'});
 
   constructor(private http: Http) { }
@@ -26,7 +26,7 @@ export class MarkService{
   }
 
   getNameUser(): Promise<any> {
-    const url = `${'http://192.168.1.65:8080/getUserName'}`;
+    const url = `${'http://localhost:8080/getUserName'}`;
     return this.http.get(url)
             .toPromise()
             .then(response => response)
