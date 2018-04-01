@@ -40,7 +40,6 @@ export class ModalFormComponent implements OnInit, OnChanges {
 
   ngOnChanges(): void {
     if(!!this.marker){
-      //console.log(this.marker);
       this.modalForm.controls['idMark'].setValue(this.marker.id);
       this.modalForm.controls['nameMark'].setValue(this.marker.iconContent);
       this.modalForm.controls['latMark'].setValue(this.marker.latitude);
@@ -52,7 +51,6 @@ export class ModalFormComponent implements OnInit, OnChanges {
             return true;
           }
         });
-        //обновление combox'а в соответствии с нажатой маркой в таблице
         $("div.btn-group button.btn span.filter-option")
           .html("<img width='20' height='20' src='" + selectIcon.path + "'>" + selectIcon.name);
         this.modalForm.controls['iconOption'].setValue(selectIcon.name);
@@ -70,7 +68,6 @@ export class ModalFormComponent implements OnInit, OnChanges {
   }
 
   changeFieldMark(form: NgForm){
-    //console.log(form.value);
     let selectIcon = this.icons.find((item) => {
       if(item.name === form.value.iconOption){
         return true;

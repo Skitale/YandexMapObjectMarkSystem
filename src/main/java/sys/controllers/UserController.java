@@ -42,19 +42,13 @@ public class UserController {
     @RequestMapping(value = "/getUserName", method = RequestMethod.GET)
     public @ResponseBody String getUserName(HttpServletRequest request){
         Long userId = (Long) request.getSession().getAttribute("userId");
-        System.out.println("GET USER NAME WITH USERID = " + userId);
         User u = this.userService.findById(userId);
-        if(u == null){
-            System.out.println("Pavlik");
-            return "Pavlik";
-        }
         return u.getUsername();
     }
 
     @RequestMapping(value = "/registration", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public String registration(Model model) {
         model.addAttribute("userForm", new User());
-        System.out.println("regGET");
         return "registration";
     }
 
@@ -62,8 +56,6 @@ public class UserController {
     public String registration(@ModelAttribute("userForm") User userForm, BindingResult bindingResult, Model model) {
         System.out.println("regPOST");
         userValidator.validate(userForm, bindingResult);
-        //request.getSession().setAttribute("ATTR", 5);
-
         if (bindingResult.hasErrors()) {
             return "registration";
         }
@@ -90,21 +82,18 @@ public class UserController {
         return "login";
     }
 
+	@Deprecated
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public String login(Model model) {
-        System.out.println("logPOST");
         return "redirect:/welcome";
     }
 
     @RequestMapping(value = {"/", "/welcome"}, method = {RequestMethod.GET, RequestMethod.POST})
     public String welcome(Model model, HttpServletRequest request) {
-        System.out.println("welcome");
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetail = (UserDetails) auth.getPrincipal();
-        //System.out.println("CUSTOM ATTR = " + request.getSession().getAttribute("ATTR"));
         User u = userService.findByUsername(userDetail.getUsername());
         request.getSession().setAttribute("userId", u.getId());
-        System.out.println("YOUR USERID = " + u.getId());
         return "redirect:/index.html";
     }
 }

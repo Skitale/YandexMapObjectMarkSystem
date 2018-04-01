@@ -35,7 +35,6 @@ public class ObjectMarkController {
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public @ResponseBody Iterable<ObjectMark> getAllMarkObjects(HttpServletRequest request){
         Long userId = (Long) request.getSession().getAttribute("userId");
-        System.out.println(userId);
        return objectMarkService.getAllMarkObjects(userId);
     }
 
@@ -44,7 +43,6 @@ public class ObjectMarkController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody ObjectMark createMarkObject(@RequestBody ObjectMark objectMark, HttpServletRequest request, @RequestParam(value = "_csrf", required = false) String csrf){
         Long userId = (Long) request.getSession().getAttribute("userId");
-        System.out.println(userId);
         return objectMarkService.createMarkObject(objectMark, userId);
     }
 

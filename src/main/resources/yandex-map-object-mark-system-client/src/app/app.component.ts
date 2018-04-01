@@ -64,27 +64,16 @@ export class AppComponent implements OnInit {
        this.myMap.geoObjects.add(this.selectedMarkYApi);
        this.myMap.geoObjects.add(this.searchMarkYApi);
 
-       //console.log("myMap: " + that.myMap);
        this.registrationEventClickOnMap();
        this.registrationEventDragEnd();
 
        this.getMarksFromServer();
-
-       // get markers from static file
-       /*this.markService.getMarks().then( (markers) => {
-         this.markers = markers;
-         this.ref.detectChanges();
-         this.drawMarkersOnMap();
-       });*/
     });
 
   }
 
 
   drawMarkersOnMap(){
-    //console.log("markers: " + this.markers);
-    //console.log("ymaps: " + ymaps);
-    //console.log("myMap: " + this.myMap);
     this.markers.forEach((item, i, arr) =>{
       this.drawMarkerOnMap(item);
     });
@@ -100,7 +89,6 @@ export class AppComponent implements OnInit {
     if(marker.preset == null){
       marker.preset = '';
     }
-    //console.log(marker);
     var mark = new ymaps.Placemark([marker.latitude, marker.longitude], {
       balloonContentHeader: marker.iconContent,
       balloonContentBody: marker.balloonContentBody,
@@ -115,7 +103,6 @@ export class AppComponent implements OnInit {
   }
 
   clearMarkerOnMap(marker : Marker){
-    //console.log("ref: " + marker.refMarkApi + ", name: " + marker.iconContent);
     this.myMap.geoObjects.remove(marker.refMarkApi);
     marker.refMarkApi = null;
   }
@@ -127,13 +114,10 @@ export class AppComponent implements OnInit {
       this.selectedMarkYApi.options.set('visible', true);
       this.selectedMarkYApi.geometry.setCoordinates(e.get('coords'));
       this.getGeoCodeAndSetProperties(this.selectedMarkYApi, this.selectedMark);
-      //console.log(this.selectedMark.iconContent);
-      //console.log('click on YM set prop mark: ' + this.selectedMarkYApi.properties.get('iconContent'));
     });
   }
 
   registrationEventDragEnd(){
-    //console.log(this.selectedMarkYApi);
     this.selectedMarkYApi.events.add('dragend', (e) =>{
       this.isSaveSelectedMarker = false;
       this.getGeoCodeAndSetProperties(this.selectedMarkYApi, this.selectedMark);
@@ -146,7 +130,6 @@ export class AppComponent implements OnInit {
     marker.balloonContentBody = markerYApi.properties.get('balloonContentBody');
     marker.iconContent = markerYApi.properties.get('iconContent');
     this.ref.detectChanges();
-    //console.log('update properties marker: ' + marker.iconContent);
   }
 
   getGeoCodeAndSetProperties(markerApi : any, marker: Marker){
@@ -198,27 +181,19 @@ export class AppComponent implements OnInit {
        refMarkApi: ''
     }
     this.saveMarkToServer(mark).then( res => {
-      //console.warn('from server: ');
-      //console.log(res);
       marker.id = res.id;
       mark.id = res.id
-      //console.log(mark);
       this.markers.push(mark);
       this.ref.detectChanges();
       this.drawMarkerOnMap(mark);
       marker.refMarkApi.options.set('visible', false);
     });
-
-    //console.log(m);
-    //this.logArrForEach();
   }
 
   deleteMarkFromTable(marker: Marker){
     this.deleteMarkFromServer(marker.id);
     let index = this.markers.findIndex( obj => obj.id == marker.id );
 
-    //console.log("this.isSaveSelectedMarker "+ this.isSaveSelectedMarker);
-    //console.log("this.isSaveSearchMarker "+ this.isSaveSearchMarker);
     if(marker.id === this.selectedMark.id){
       this.isSaveSelectedMarker = false;
       this.selectedMark.refMarkApi.options.set('visible', true);
@@ -228,13 +203,8 @@ export class AppComponent implements OnInit {
       this.searchMark.refMarkApi.options.set('visible', true);
     }
     this.clearMarkerOnMap(this.markers[index]);
-    //console.log(marker);
-    //console.log("and it id: " + index);
-    //console.log("this.isSaveSelectedMarker "+ this.isSaveSelectedMarker);
-    //console.log("this.isSaveSearchMarker "+ this.isSaveSearchMarker);
     this.markers.splice(index, 1);
     this.ref.detectChanges();
-    //this.logArrForEach();
   }
 
   saveSelectedMark(){
@@ -264,14 +234,11 @@ export class AppComponent implements OnInit {
   }
 
   toSearchMarker(form: NgForm){
-    //console.log(form);
     this.submittedForm = true;
     this.isSaveSearchMarker = false;
-    //console.log(!!this.searchMark.coordinates[0] && !!this.searchMark.coordinates[1]);
     this.searchMark.preset = 'islands#darkBlueDotIconWithCaption';
     this.searchMark.latitude = form.value.lat;
     this.searchMark.longitude= form.value.lng;
-    //console.log(this.searchMark);
     this.searchMarkYApi.options.set('visible', true);
     this.searchMarkYApi.geometry.setCoordinates([this.searchMark.latitude, this.searchMark.longitude]);
     this.myMap.setCenter([this.searchMark.latitude, this.searchMark.longitude]);
@@ -293,7 +260,6 @@ export class AppComponent implements OnInit {
 
   getMarksFromServer(){
     this.markService.getMarksFromServer().then((res)=>{
-      //console.log(res);
       res.forEach( (mark) => {
         let m : Marker = {
           id: mark.id,
@@ -307,12 +273,9 @@ export class AppComponent implements OnInit {
         this.markers.push(m);
       });
       this.drawMarkersOnMap();
-      //console.log(this.markers);
       this.markers.forEach( (mark) => {
-        //console.log(mark);
         this.drawCustomIconForMark(mark);
     		this.getGeoCodeAndSetPropertiesForLoadFromServer(mark.refMarkApi, mark);
-        //this.updateMarkFromServer(mark);
       });
     });
   }
@@ -330,7 +293,6 @@ export class AppComponent implements OnInit {
   }
 
   getModalFormForMark(marker: Marker){
-    //console.log(this.modalForm);
     this.selectedMarkForModalForm = marker;
     this.ref.detectChanges();
   }
